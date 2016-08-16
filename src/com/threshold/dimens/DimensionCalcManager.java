@@ -22,14 +22,14 @@ public class DimensionCalcManager {
 	 *
 	 * @author 黄守江
 	 * @param standardDimensionFilePath 1136x640的标准dimension.xml文件路径
-	 * @param destinationResFolderPath 含有许多values的 res文件夹路径。
+	 * @param destinationResFolderPath 含有许多values的 res文件夹路径。子文件夹路径格式形如 values-hdpi-1024x600
 	 * @since JDK 1.6
 	 */
 	public static void executeBatchTask(String standardDimensionFilePath, String destinationResFolderPath){
 		File file=new File(destinationResFolderPath);
 //		File file=new File("d:\\res\\");
 		FileFilter filter= pathname -> {
-            if (pathname.getName().contains("values")) {
+            if (pathname.getName().startsWith("values-")) {
                 return true;
             }
             System.out.println("Attention：res文件夹下含有非values开头的文件夹："+pathname);

@@ -87,7 +87,7 @@ public class ChangeDimensionTask {
     }
 
     private void saveFile() {
-        File file = new File(destFileFolder + "\\dimens.xml");
+        File file = new File(destFileFolder + File.separator + "dimens.xml");
         try (FileOutputStream fop = new FileOutputStream(file)) {
             if (!file.exists()) {
                 if (file.createNewFile()) {
@@ -107,12 +107,11 @@ public class ChangeDimensionTask {
             fop.write(contentInBytes);
             fop.flush();
             fop.close();
-            System.out.println("Done:      " + destFileFolder + "\\dimens.xml");
+            System.out.println("Done:      " + destFileFolder + File.separator + "dimens.xml");
             System.out.println("------------------------------------------------------" + "\n\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     private void readFileByLines() {
