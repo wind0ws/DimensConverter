@@ -1,6 +1,7 @@
 package com.threshold.dimens;
 
 import java.io.*;
+import java.math.BigDecimal;
 
 /**
  * ClassName:ChangeDimension
@@ -184,19 +185,22 @@ public class ChangeDimensionTask {
         if (oneLine.contains("Default screen margins")) {//说明是默认Values文件夹第一行备注
             return "    <!-- " + firstLineStatement +" -->";
         }
-        int dpDimension = oneLine.indexOf("dp</dimen>");
+        String convertString = updateDimension(oneLine, "dp");
+        convertString = updateDimension(convertString, "dip");
+        convertString = updateDimension(convertString, "sp");
+        return convertString;
+    }
+
+    private String updateDimension(String oneLine, String keyword) {
+        int dpDimension = oneLine.indexOf(keyword + "</dimen>");
         if (dpDimension > -1) {
             int begin = oneLine.indexOf("\">");
             int end = oneLine.indexOf("</");
             if (begin > 0 && end > 0 && end > begin) {
                 String dimensionString = oneLine.substring(begin + 2, end);
-                double dp = Double.valueOf(dimensionString.substring(0, dimensionString.indexOf("dp")));
-                double newDimen = dp * ratio;
-//				String newDimension=newDimen+"dp";
-//				oneLine.replaceAll(dimensionString, newDimension);
-                String newTempString = oneLine.replace(dimensionString, String.format("%.2f", newDimen) + "dp");
-//				System.out.println("new String="+newTempString);
-                return newTempString;
+                int dp = Integer.valueOf(dimensionString.substring(0, dimensionString.indexOf(keyword)));
+                BigDecimal newDimen = new BigDecimal(dp * ratio).setScale(2, BigDecimal.ROUND_HALF_UP);
+                return oneLine.replace(dimensionString, newDimen + keyword);
             }
         }
         return oneLine;
