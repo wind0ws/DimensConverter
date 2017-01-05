@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: -h
+Main-Class: com.threshold.dimens.Main
+

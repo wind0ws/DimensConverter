@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Dimens:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Dimens_jar</output-path>
+    <root id="archive" name="Dimens.jar">
+      <element id="module-output" name="Dimens" />
+    </root>
+  </artifact>
+</component>

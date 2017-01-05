@@ -1,81 +1,107 @@
-/**
- * Project Name:TestFunction
- * File Name:ChangeDimension.java
- * Package Name:com.threshold.testfunction
- * Date:2015年9月21日下午2:12:17
- * Copyright (c) 2015,QuanXiang All Rights Reserved.
- */
-
 package com.threshold.dimens;
 
 import java.io.*;
 
 /**
- * ClassName:ChangeDimension 
- * Function: TODO ADD FUNCTION. 
- * Reason:	 TODO ADD REASON. 
- * Date:     2015年9月21日 下午2:12:17 
- * @author 黄守江
- * @version
- * @since JDK 1.6
- * @see
+ * ClassName:ChangeDimension
+ * Date:     2015年9月21日 下午2:12:17
  */
 public class ChangeDimensionTask {
 
     private StringBuilder stringBuilder;
     private String sourceFileName;
     private String destFileFolder;
-    private String dpiString;
-    private float ratio;
-    private int height, width;
+    private String targetDpiString;
+    private double ratio;
     private String firstLineStatement = "";
 
-    public ChangeDimensionTask(String sourceFileName, String destFolder, int height, int width, String dpi) {
+    /**
+     *
+     * @param sourceFileName dimens.xml文件路径
+     * @param resFolder res文件夹路径
+     * @param standardDpiString 比如mdpi、hdpi、xhdpi，640dpi等
+     * @param targetDpiString 同上
+     */
+    public ChangeDimensionTask(String sourceFileName, String standardDpiString,
+                               String resFolder, String targetDpiString) {
         this.sourceFileName = sourceFileName;
-        this.destFileFolder = destFolder;
-        this.dpiString = dpi;
+        this.destFileFolder = resFolder;
+        this.targetDpiString = targetDpiString;
         stringBuilder = new StringBuilder();
-        this.height = height;
-        this.width = width;
-        calculatorRatio();
+        calculatorRatio(getStandardRatio(standardDpiString));
+    }
+
+    private double getStandardRatio(String standardDpiString){
+        double dpiRatio ;
+        switch (standardDpiString) {
+            case DpiName.LDPI:
+                dpiRatio = DpiName.LDPI_RATIO;
+                break;
+            case DpiName.MDPI:
+                dpiRatio = DpiName.MDPI_RATIO;
+                break;
+            case DpiName.HDPI:
+                dpiRatio = DpiName.HDPI_RATIO;
+                break;
+            case DpiName.XHDPI:
+                dpiRatio = DpiName.XHDPI_RATIO;
+                break;
+            case DpiName.XXHDPI:
+                dpiRatio = DpiName.XXHDPI_RATIO;
+                break;
+            case DpiName.XXXHDPI:
+                dpiRatio = DpiName.XXXHDPI_RATIO;
+                break;
+            default:
+                int dpiNumber = Integer.parseInt( targetDpiString.substring(0, targetDpiString.indexOf("dpi")));
+                dpiRatio = (double)dpiNumber/(double) DpiName.MDPI_DPI;
+                break;
+        }
+        return dpiRatio;
     }
 
 
-    private void calculatorRatio() {
-        float coefficient;
-        switch (dpiString) {
+    private void calculatorRatio(double standardRatio) {
+//        float coefficient;
+        switch (targetDpiString) {
             case DpiName.LDPI:
-                coefficient = 0.75f;
+                ratio = DpiName.LDPI_RATIO / standardRatio ;
+//                coefficient = 0.75f;
                 firstLineStatement = "ldpi 120dpi";
                 break;
             case DpiName.MDPI:
-                coefficient = 1.0f;
+                ratio = DpiName.MDPI_RATIO /standardRatio;
+//                coefficient = 1.0f;
                 firstLineStatement = "mdpi 160dpi";
                 break;
             case DpiName.HDPI:
-                coefficient = 1.5f;
+                ratio = DpiName.HDPI_RATIO / standardRatio;
+//                coefficient = 1.5f;
                 firstLineStatement = "hdpi 240dpi";
                 break;
             case DpiName.XHDPI:
-                coefficient = 2.0f;
+                ratio = DpiName.XHDPI_RATIO / standardRatio;
+//                coefficient = 2.0f;
                 firstLineStatement = "xhdpi 320dpi";
                 break;
             case DpiName.XXHDPI:
-                coefficient = 3.0f;
+                ratio = DpiName.XXHDPI_RATIO / standardRatio;
+//                coefficient = 3.0f;
                 firstLineStatement = "xxhdpi 480dpi";
                 break;
             case DpiName.XXXHDPI:
-                coefficient = 4.0f;
+                ratio = DpiName.XXXHDPI_RATIO / standardRatio;
+//                coefficient = 4.0f;
                 firstLineStatement = "xxxhdpi 640dpi";
                 break;
             default:
-                String dpiNumber = dpiString.substring(0, dpiString.indexOf("dpi"));
-                coefficient = Integer.valueOf(dpiNumber) / 160;
-                firstLineStatement = dpiString;
+                int dpiNumber = Integer.parseInt( targetDpiString.substring(0, targetDpiString.indexOf("dpi")));
+                ratio = (double)dpiNumber/(double) DpiName.MDPI_DPI;
+//                coefficient = Integer.valueOf(dpiNumber) / 160;
+                firstLineStatement = targetDpiString;
                 break;
         }
-        this.ratio = (float) width / 720.0f / coefficient;
-        System.out.println("计算出的系数：" + ratio);
+        System.out.println("Ratio：" + ratio);
     }
 
 
@@ -87,7 +113,14 @@ public class ChangeDimensionTask {
     }
 
     private void saveFile() {
-        File file = new File(destFileFolder + File.separator + "dimens.xml");
+        String targetFolder = destFileFolder + File.separator + "values-" + targetDpiString;
+        File targetFolderFile = new File(targetFolder);
+        if (!targetFolderFile.exists()) {
+            if (!targetFolderFile.mkdirs()) {
+                System.out.println("Create "+targetFolder+" folder FAILED !!!");
+            }
+        }
+        File file = new File(targetFolder + File.separator + "dimens.xml");
         try (FileOutputStream fop = new FileOutputStream(file)) {
             if (!file.exists()) {
                 if (file.createNewFile()) {
@@ -107,14 +140,17 @@ public class ChangeDimensionTask {
             fop.write(contentInBytes);
             fop.flush();
             fop.close();
-            System.out.println("Done:      " + destFileFolder + File.separator + "dimens.xml");
-            System.out.println("------------------------------------------------------" + "\n\n");
+            System.out.println("Done:      " + targetFolder + File.separator + "dimens.xml");
+            System.out.println("----------------------------------------------------------------" + "\n\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void readFileByLines() {
+        if (!sourceFileName.contains("dimens.xml")) { //this means sourceFileName is a folder
+            sourceFileName = sourceFileName + File.separator + "dimens.xml";
+        }
         File file = new File(sourceFileName);
         BufferedReader reader = null;
         try {
@@ -145,8 +181,8 @@ public class ChangeDimensionTask {
     }
 
     private String updateDimension(String oneLine) {
-        if (oneLine.contains("Default screen margins")) {//说明是第一行备注 mdpi 160dpi 1136x640
-            return "    <!-- " + firstLineStatement + " " + height + "x" + width + " -->";
+        if (oneLine.contains("Default screen margins")) {//说明是默认Values文件夹第一行备注
+            return "    <!-- " + firstLineStatement +" -->";
         }
         int dpDimension = oneLine.indexOf("dp</dimen>");
         if (dpDimension > -1) {
@@ -158,7 +194,7 @@ public class ChangeDimensionTask {
                 double newDimen = dp * ratio;
 //				String newDimension=newDimen+"dp";
 //				oneLine.replaceAll(dimensionString, newDimension);
-                String newTempString = oneLine.replace(dimensionString, String.format("%.3f", newDimen) + "dp");
+                String newTempString = oneLine.replace(dimensionString, String.format("%.2f", newDimen) + "dp");
 //				System.out.println("new String="+newTempString);
                 return newTempString;
             }
@@ -167,13 +203,31 @@ public class ChangeDimensionTask {
     }
 
 
-    private static final class DpiName {
-        static final String LDPI = "ldpi";
-        static final String MDPI = "mdpi";
-        static final String HDPI = "hdpi";
-        static final String XHDPI = "xhdpi";
-        static final String XXHDPI = "xxhdpi";
-        static final String XXXHDPI = "xxxhdpi";
+    public static final class DpiName {
+        static final String LDPI = "ldpi"; //0  ~ 120 dpi
+        static final double LDPI_RATIO = 0.75;
+        static final int LDPI_DPI = 120;
+
+        static final String MDPI = "mdpi"; //120  ~ 160 dpi
+        static final double MDPI_RATIO = 1;
+        static final int MDPI_DPI = 160;
+
+        static final String HDPI = "hdpi"; //160  ~ 240 dpi
+        static final double HDPI_RATIO = 1.5;
+        static final int HDPI_DPI = 240;
+
+        static final String XHDPI = "xhdpi"; //240  ~ 320 dpi
+        static final double XHDPI_RATIO = 2;
+        static final int XHDPI_DPI = 320;
+
+        static final String XXHDPI = "xxhdpi"; //320  ~ 480 dpi
+        static final double XXHDPI_RATIO = 3;
+        static final int XXHDPI_DPI = 480;
+
+        static final String XXXHDPI = "xxxhdpi";//480  ~ 640 dpi
+        static final double XXXHDPI_RATIO = 4;
+        static final int XXXHDPI_DPI = 640;
+
     }
 
 
